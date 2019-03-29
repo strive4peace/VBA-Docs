@@ -24,10 +24,10 @@ The **Partition** function syntax has these [named arguments](../../Glossary/vbe
 
 |Part|Description|
 |:-----|:-----|
-|_number_|Required. The number that you want to evaluate against the ranges.|
-|_start_|Required. The number that is the start of the overall range of numbers. The number can't be less than 0.|
-|_stop_|Required. The number that is the end of the overall range of numbers. The number can't be equal to or less than _start_.|
-|_interval_|Required. The number that is the difference between one range and the next. The number can't be less than 1.|
+|_number_|Required. The number, which is usually an expression, that you want to evaluate against the ranges.|
+|_start_|Required. The whole number that is the start of the overall range of numbers. The number can't round to less than 0.|
+|_stop_|Required. The whole number that is the end of the overall range of numbers. The number must be greater than _start_.|
+|_interval_|Required. The whole number that is the difference between one range and the next. The number can't round to less than 1.|
 
 ## Remarks
 
@@ -64,6 +64,28 @@ Count(Orders.Freight) AS Count
 FROM Orders
 GROUP BY Partition([freight],0,500,50);
 ```
+
+## Example 2
+
+A great example of using Partition is putting numbers into 30-day buckets for aging overdue amounts. Let's say you have a field called DateDue and you want to know what is past 30 days due, past 60 days due, and so on. You could use an expression like this:
+
+Partition( DateDiff("d", [DateDue], Date()), 1, 120, 30)
+
+The number to evaluate is an expression that calculates the difference in days from the DateDue field and the current date.
+
+_Start_ is 1. _Stop_ is 120. The _interval_ is 30 (days).
+
+Next perhaps you would sum a field, and then maybe count how many amounts are in each total. The resulting SQL statement, based on a query with balances called qBalances, would be:
+
+```sql
+SELECT Partition(DateDiff("d",[DateDue],Date()),1,120,30) AS DaysOverdue
+, Sum(qBalances.Amount) AS SumDue
+, Count(qBalances.OrderID) AS Nbr
+FROM qBalances
+GROUP BY Partition(DateDiff("d",[DateDue],Date()),1,120,30);
+```
+
+
 
 ## See also
 
